@@ -27,6 +27,8 @@ export default function App() {
     const formData = new FormData();
     formData.append('file', file);
 
+    console.log(`[compress] Sending "${file.name}" (${file.size} bytes) to /api/compress`);
+
     try {
       const res = await fetch('/api/compress', { method: 'POST', body: formData });
 
@@ -36,11 +38,14 @@ export default function App() {
       }
 
       const blob = await res.blob();
+      console.log(`[compress] Response received: ${blob.size} bytes`);
+
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
-      setDownloadName(file.name + '.lz77');
+      setDownloadName(file.name);
       setStatus('done');
     } catch (err) {
+      console.error('[compress] Error:', err.message);
       setErrorMsg(err.message);
       setStatus('error');
     }

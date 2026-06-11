@@ -42,7 +42,7 @@ export default function App() {
 
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
-      setDownloadName(file.name);
+      setDownloadName(file.name + '.zip');
       setStatus('done');
     } catch (err) {
       console.error('[compress] Error:', err.message);
@@ -54,7 +54,7 @@ export default function App() {
   return (
     <div className="container">
       <h1>File Compressor</h1>
-      <p className="subtitle">LZ77 compression &mdash; up to 100 MB</p>
+      <p className="subtitle">ZIP compression &mdash; up to 100 MB</p>
 
       <div className="drop-zone" onClick={() => inputRef.current.click()}>
         {file ? (

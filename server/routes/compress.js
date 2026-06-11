@@ -1,6 +1,6 @@
 const express = require('express');
 const multer = require('multer');
-const archiver = require('archiver');
+const { ZipArchive } = require('archiver');
 
 const router = express.Router();
 
@@ -19,10 +19,10 @@ router.post('/compress', upload.single('file'), (req, res) => {
   res.setHeader('Content-Type', 'application/zip');
   res.setHeader('Content-Disposition', `attachment; filename="${outputName}"`);
 
-  const archive = archiver('zip', { zlib: { level: 9 } });
+  const archive = new ZipArchive({ zlib: { level: 9 } });
 
-  archive.on('error', (err) => {
-if (!res.headersSent) {
+  archive.on('error', () => {
+    if (!res.headersSent) {
       res.status(500).json({ error: 'Compression failed.' });
     }
   });

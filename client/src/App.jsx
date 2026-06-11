@@ -38,7 +38,7 @@ export default function App() {
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
-      setDownloadName(file.name + '.zip');
+      setDownloadName(file.name.replace(/\.[^.]+$/, '') + '.zip');
       setStatus('done');
     } catch (err) {
       setErrorMsg(err.message);

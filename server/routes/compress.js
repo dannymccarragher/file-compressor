@@ -14,7 +14,8 @@ router.post('/compress', upload.single('file'), (req, res) => {
     return res.status(400).json({ error: 'No file uploaded.' });
   }
 
-  const outputName = req.file.originalname + '.zip';
+  const baseName = req.file.originalname.replace(/\.[^.]+$/, '');
+  const outputName = baseName + '.zip';
 
   res.setHeader('Content-Type', 'application/zip');
   res.setHeader('Content-Disposition', `attachment; filename="${outputName}"`);

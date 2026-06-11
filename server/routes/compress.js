@@ -14,8 +14,6 @@ router.post('/compress', upload.single('file'), (req, res) => {
     return res.status(400).json({ error: 'No file uploaded.' });
   }
 
-  console.log(`[POST /api/compress] Received: "${req.file.originalname}" (${req.file.size} bytes)`);
-
   const outputName = req.file.originalname + '.zip';
 
   res.setHeader('Content-Type', 'application/zip');
@@ -24,14 +22,9 @@ router.post('/compress', upload.single('file'), (req, res) => {
   const archive = archiver('zip', { zlib: { level: 9 } });
 
   archive.on('error', (err) => {
-    console.error('[POST /api/compress] Archive error:', err.message);
-    if (!res.headersSent) {
+if (!res.headersSent) {
       res.status(500).json({ error: 'Compression failed.' });
     }
-  });
-
-  archive.on('end', () => {
-    console.log(`[POST /api/compress] Done: sent "${outputName}" (${archive.pointer()} bytes)`);
   });
 
   archive.pipe(res);

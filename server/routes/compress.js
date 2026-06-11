@@ -1,6 +1,6 @@
 const express = require('express');
 const multer = require('multer');
-const { compress } = require('../lib/lz77');
+const archiver = require('archiver');
 
 const router = express.Router();
 
@@ -16,22 +16,27 @@ router.post('/compress', upload.single('file'), (req, res) => {
 
   console.log(`[POST /api/compress] Received: "${req.file.originalname}" (${req.file.size} bytes)`);
 
-  try {
-    const compressed = compress(req.file.buffer);
-    const outputName = req.file.originalname;
+  const outputName = req.file.originalname + '.zip';
 
-    console.log(`[POST /api/compress] Compressed: ${req.file.size} → ${compressed.length} bytes (ratio: ${(compressed.length / req.file.size * 100).toFixed(1)}%)`);
+  res.setHeader('Content-Type', 'application/zip');
+  res.setHeader('Content-Disposition', `attachment; filename="${outputName}"`);
 
-    res.setHeader('Content-Type', 'application/octet-stream');
-    res.setHeader('Content-Disposition', `attachment; filename="${outputName}"`);
-    res.setHeader('Content-Length', compressed.length);
-    res.send(compressed);
+  const archive = archiver('zip', { zlib: { level: 9 } });
 
-    console.log(`[POST /api/compress] Response sent: "${outputName}"`);
-  } catch (err) {
-    console.error('[POST /api/compress] Compression failed:', err);
-    res.status(500).json({ error: 'Compression failed.' });
-  }
+  archive.on('error', (err) => {
+    console.error('[POST /api/compress] Archive error:', err.message);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Compression failed.' });
+    }
+  });
+
+  archive.on('end', () => {
+    console.log(`[POST /api/compress] Done: sent "${outputName}" (${archive.pointer()} bytes)`);
+  });
+
+  archive.pipe(res);
+  archive.append(req.file.buffer, { name: req.file.originalname });
+  archive.finalize();
 });
 
 module.exports = router;

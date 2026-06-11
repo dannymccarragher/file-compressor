@@ -60,4 +60,35 @@ function compress(inputBuffer) {
   return output.slice(0, writePos);
 }
 
-module.exports = { compress };
+function decompress(inputBuffer) {
+  const magic = inputBuffer.slice(0, 4);
+  if (magic.toString() !== 'LZ77') {
+    throw new Error('Invalid file: missing LZ77 header.');
+  }
+
+  const originalSize = inputBuffer.readUInt32BE(4);
+  const output = Buffer.alloc(originalSize);
+  let readPos = 8;
+  let writePos = 0;
+
+  while (readPos < inputBuffer.length) {
+    const flag = inputBuffer[readPos++];
+
+    if (flag === 0x00) {
+      output[writePos++] = inputBuffer[readPos++];
+    } else if (flag === 0x01) {
+      const offset = inputBuffer.readUInt16BE(readPos); readPos += 2;
+      const length = inputBuffer[readPos++];
+      const start = writePos - offset;
+      for (let i = 0; i < length; i++) {
+        output[writePos++] = output[start + i];
+      }
+    } else {
+      throw new Error(`Unknown token flag: 0x${flag.toString(16)}`);
+    }
+  }
+
+  return output;
+}
+
+module.exports = { compress, decompress };

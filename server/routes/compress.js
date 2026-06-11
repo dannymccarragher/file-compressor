@@ -16,7 +16,7 @@ router.post('/compress', upload.single('file'), (req, res) => {
 
   try {
     const compressed = compress(req.file.buffer);
-    const outputName = req.file.originalname + '.lz77';
+    const outputName = req.file.originalname;
 
     res.setHeader('Content-Type', 'application/octet-stream');
     res.setHeader('Content-Disposition', `attachment; filename="${outputName}"`);
